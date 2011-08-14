@@ -1,17 +1,27 @@
-package lib.config.web;
+package lib.config.web.container;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+import lib.config.base.configuration.Configuration;
+import lib.config.web.DisplayableConfiguration;
 
 import org.simpleframework.http.Form;
 import org.simpleframework.http.Query;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.core.Container;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigurationContainer implements Container {
-
+	private static final Logger logger = LoggerFactory.getLogger(
+			ConfigurationContainer.class);
+	
 	private final Map<String, DisplayableConfiguration> config;
+	private final Set<ContainerListener> listeners;
 	
 	/**
 	 * 
@@ -21,6 +31,7 @@ public class ConfigurationContainer implements Container {
 	 */
 	public ConfigurationContainer(Map<String, DisplayableConfiguration> config) {
 		this.config = config;
+		this.listeners = new HashSet<ContainerListener>();
 	}
 	
 	@Override
@@ -46,12 +57,22 @@ public class ConfigurationContainer implements Container {
 				DisplayableConfiguration conf = config.get(id);
 				
 				if(conf != null) {
+					
+					boolean modified = false;
+					
 					for(String key : form.keySet()) {
 						if(conf.getKeys().contains(key)) {
 							conf.setProperty(key, form.get(key));
+							modified = true;
 						} 
 					}
+					
+					if(modified) {
+						notifyOnUpdate(conf);
+					}
+					
 					body.println("Configuration has been updated!");
+					body.println("<a href='/'>Back</a>");
 				} else {
 					body.println("Invalid post submitted.");
 				}
@@ -74,7 +95,7 @@ public class ConfigurationContainer implements Container {
 					body.println("</li>");
 				}
 				body.println("</ul>");
-				;
+				
 			} else {
 				
 				String queried = query.get("config");
@@ -92,9 +113,7 @@ public class ConfigurationContainer implements Container {
 
 			body.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			// Server could not write back to client
-			e.printStackTrace();
+			logger.warn("IOException occured on handle.", e);
 		}
 	}
 	
@@ -135,4 +154,13 @@ public class ConfigurationContainer implements Container {
 		return html.toString();
 	}
 
+	public void addListener(ContainerListener listener) {
+		listeners.add(listener);
+	}
+	
+	private void notifyOnUpdate(Configuration config) {
+		for(ContainerListener curr : listeners) {
+			curr.onModifed(config);
+		}
+	}
 }

@@ -1,16 +1,36 @@
 package lib.config.web;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
-public class Main {
+import lib.config.base.configuration.Configuration;
+import lib.config.web.container.ContainerListener;
 
-	/**.
-	 * 
-	 * The displayble configurations must be defined in code, and passed to 
-	 */	
-	public static void main(String[] args) throws Exception {
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class ConfigurationServerTest {
+
+	private static final Logger logger = LoggerFactory.getLogger(
+			ConfigurationServerTest.class);
+	
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void testStart() throws IOException, InterruptedException {
 		
+		// create test configuration
 		DisplayableConfiguration testConfig = new DisplayableConfiguration() {
 			private Map<String, String> properties = new HashMap<String, String>();
 			
@@ -26,7 +46,7 @@ public class Main {
 			
 			@Override
 			public String getId() {
-				return "transfer";
+				return "test_settings";
 			}
 			
 			@Override
@@ -40,10 +60,8 @@ public class Main {
 
 			@Override
 			public String getDisplayName() {
-				return "Transfer Configuration";
+				return "Test Configuration";
 			}
-
-
 		};
 		
 		// the map enforces a unique id between the displayable configurations. 
@@ -53,7 +71,21 @@ public class Main {
 		configs.put("test_config", testConfig);
 		
 		ConfigurationServer server = new ConfigurationServer(8080, configs);
+		logger.debug("Pre server start");
 		server.start();
-
+		
+		server.addListener(new ContainerListener() {
+			
+			@Override
+			public void onModifed(Configuration config) {
+				System.out.println("Configuration modified: " + config);
+			}
+		});
+		
+		// TODO sync this properly
+		Thread.sleep(50000);
+		
+		logger.debug("Post server start");
 	}
+
 }
