@@ -3,8 +3,6 @@ import java.util.LinkedHashSet;
 
 import lib.config.base.configuration.Configuration;
 
-
-
 public interface DisplayableConfiguration extends Configuration {
 
 	

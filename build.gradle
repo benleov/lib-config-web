@@ -1,0 +1,41 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+		compile([project(':lib_config_base').sourceSets.test.output],
+		    [group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'],
+			[group:'ch.qos.logback', name: 'logback-core', version: '0.9.29'],
+			[group:'org.simpleframework', name: 'simple-xml', version: '2.6'])
+		
+
+		testCompile ([[project(':lib_config_base')]],[group: 'junit', name: 'junit', version: '4.+'])
+		
+		runtime([group: 'ch.qos.logback', name: 'logback-classic', version: '0.9.29'],
+			[group: 'ch.qos.logback', name: 'logback-core', version: '0.9.29'])
+
+}
+
+/*
+Creates a fat jar (see link below for more details)
+http://docs.codehaus.org/display/GRADLE/Cookbook#Cookbook-Creatingafatjar
+*/
+
+/*
+jar {
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+*/
+
+/**
+Copys all deps to a single directory
+*/
+task copyToLib(type: Copy) {
+    into "$buildDir/output/lib"
+    from configurations.default
+    from configurations.default.allArtifacts.files
+}

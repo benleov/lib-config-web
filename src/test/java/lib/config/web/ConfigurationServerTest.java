@@ -62,6 +62,12 @@ public class ConfigurationServerTest {
 			public String getDisplayName() {
 				return "Test Configuration";
 			}
+
+			@Override
+			public void setId(String id) {
+				// TODO Auto-generated method stub
+				
+			}
 		};
 		
 		// the map enforces a unique id between the displayable configurations. 

@@ -11,7 +11,8 @@ import lib.config.base.configuration.Configuration;
 import lib.config.web.container.ConfigurationContainer;
 import lib.config.web.container.ContainerListener;
 
-import org.simpleframework.http.core.Container;
+import org.simpleframework.http.core.ContainerServer;
+import org.simpleframework.transport.Server;
 import org.simpleframework.transport.connect.Connection;
 import org.simpleframework.transport.connect.SocketConnection;
 import org.slf4j.Logger;
@@ -49,8 +50,9 @@ public class ConfigurationServer {
 					}
 				}
 			});
-
-			Connection connection = new SocketConnection(container);
+			
+			Server server = new ContainerServer(container);
+			Connection connection = new SocketConnection(server);
 			SocketAddress address = new InetSocketAddress(port);
 			connection.connect(address);
 		} else {

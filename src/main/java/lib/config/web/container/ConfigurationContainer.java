@@ -8,7 +8,6 @@ import java.util.Set;
 import lib.config.base.configuration.Configuration;
 import lib.config.web.DisplayableConfiguration;
 
-import org.simpleframework.http.Form;
 import org.simpleframework.http.Query;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
@@ -39,8 +38,9 @@ public class ConfigurationContainer implements Container {
 		try {
 			
 			long time = System.currentTimeMillis();
-			response.set("Content-Type", "text/html");
-			response.set("Server", "ConfigurationServer/1.0 (Simple 4.0)");
+		 
+			response.setContentType("text/html");
+			//response.set("Server", "ConfigurationServer/1.0 (Simple 4.0)");
 			response.setDate("Date", time);
 			response.setDate("Last-Modified", time);
 			
@@ -52,17 +52,16 @@ public class ConfigurationContainer implements Container {
 			
 			if(request.getMethod().equalsIgnoreCase("POST")) {
 				
-				Form form = request.getForm();
-				String id = form.get("config_id");
+				String id = query.get("config_id");
 				DisplayableConfiguration conf = config.get(id);
 				
 				if(conf != null) {
 					
 					boolean modified = false;
 					
-					for(String key : form.keySet()) {
+					for(String key : query.keySet()) {
 						if(conf.getKeys().contains(key)) {
-							conf.setProperty(key, form.get(key));
+							conf.setProperty(key, query.get(key));
 							modified = true;
 						} 
 					}
