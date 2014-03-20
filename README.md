@@ -6,9 +6,9 @@ An example plugin that provides an extremely lightweight web front end to the co
 Dependencies
 --------------------------------------
 
-[lib_config_base] (https://github.com/benleov/lib_config_base)
-[] (http://www.simpleframework.org/)
-[SLF4J](www.slf4j.org/‎) 
+* [lib_config_base] (https://github.com/benleov/lib_config_base)
+* [Simple Framework] (http://www.simpleframework.org/)
+* [SLF4J](www.slf4j.org/‎) 
 
 Usage
 --------------------------------------
