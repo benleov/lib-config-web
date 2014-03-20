@@ -13,7 +13,7 @@ Dependencies
 Usage
 --------------------------------------
 
-Below is an example of how a simple in-memory settings web interface can be created. Note that we could use a different configuration, so that the web interface updated a persistent source, such as an XML or INI file. 
+Below is an example of how a simple in-memory settings web interface can be created. When running, it hosts a page on port 8080, which contains a form to update all settings within the settings file. Note that we could use a different configuration, so that the web interface updated a persistent source, such as an XML or INI file. 
 
 ```java
 		/*

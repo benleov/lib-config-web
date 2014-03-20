@@ -14,10 +14,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfigurationServerTest {
+public class TransientConfigServerTest {
 
 	private static final Logger logger = LoggerFactory
-			.getLogger(ConfigurationServerTest.class);
+			.getLogger(TransientConfigServerTest.class);
 
 	@Before
 	public void setUp() throws Exception {
