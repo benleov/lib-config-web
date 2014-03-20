@@ -114,7 +114,7 @@ public class TransientConfigServerTest {
 			 * This gets notified whenever a configuration is modified.
 			 */
 			@Override
-			public void onModifed(Configuration config) {
+			public void onModifed(Configuration config, String key) {
 				logger.debug("Configuration modified: " + config);
 			}
 		});

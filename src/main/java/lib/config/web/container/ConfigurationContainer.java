@@ -58,16 +58,18 @@ public class ConfigurationContainer implements Container {
 				if(conf != null) {
 					
 					boolean modified = false;
+					String modifyedKey = null;
 					
 					for(String key : query.keySet()) {
 						if(conf.getKeys().contains(key)) {
 							conf.setProperty(key, query.get(key));
+							modifyedKey = key;
 							modified = true;
 						} 
 					}
 					
 					if(modified) {
-						notifyOnUpdate(conf);
+						notifyOnUpdate(conf, modifyedKey);
 					}
 					
 					body.println("Configuration has been updated!");
@@ -157,9 +159,9 @@ public class ConfigurationContainer implements Container {
 		listeners.add(listener);
 	}
 	
-	private void notifyOnUpdate(Configuration config) {
+	private void notifyOnUpdate(Configuration config, String key) {
 		for(ContainerListener curr : listeners) {
-			curr.onModifed(config);
+			curr.onModifed(config, key);
 		}
 	}
 }

@@ -50,6 +50,7 @@ public class PersistentConfigServerTest {
 			class BasicDisplayable extends BasicConfiguration implements DisplayableConfiguration {
 
 				private String name;
+				
 				@Override
 				public String getDisplayName() {
 					return name;
@@ -61,7 +62,8 @@ public class PersistentConfigServerTest {
 				}
 				
 			}
-							
+			
+			// in the ini persisters case, the display name is set to the section heading
 			@Override
 			public DisplayableConfiguration buildConfiguration(String name) {
 				BasicDisplayable bd = new BasicDisplayable();
@@ -73,6 +75,7 @@ public class PersistentConfigServerTest {
 		
 		try {
 			
+			// my_settings.ini is the file that it will attempt to read from/write to
 			ConfigurationList<DisplayableConfiguration> list = persister
 					.read(new File("my_settings.ini"));
 			
@@ -109,8 +112,12 @@ public class PersistentConfigServerTest {
 			 * This gets notified whenever a configuration is modified.
 			 */
 			@Override
-			public void onModifed(Configuration config) {
+			public void onModifed(Configuration config, String key) {
+				
+				
 				logger.debug("Configuration modified: " + config);
+				
+				
 			}
 		});
 

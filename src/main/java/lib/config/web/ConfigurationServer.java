@@ -44,9 +44,9 @@ public class ConfigurationServer {
 			container.addListener(new ContainerListener() {
 
 				@Override
-				public void onModifed(Configuration config) {
+				public void onModifed(Configuration config, String key) {
 					for (ContainerListener curr : listeners) {
-						curr.onModifed(config);
+						curr.onModifed(config, key);
 					}
 				}
 			});

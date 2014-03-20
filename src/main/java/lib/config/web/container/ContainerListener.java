@@ -6,6 +6,6 @@ public interface ContainerListener {
 	/**
 	 * Called when the configuration has been modified.
 	 */
-	void onModifed(Configuration config);
+	void onModifed(Configuration config, String key);
 	
 }
