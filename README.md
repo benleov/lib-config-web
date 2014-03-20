@@ -1,7 +1,7 @@
 lib_config_web
 ==================================================
 
-An example plugin that provides an extremely lightweight web front end to the configuration base library. It allows the user to update an ini style settings file via a dynamically created webpage. 
+lib_config_web provides an extremely lightweight web front end to the configuration base library.  It generates an HTML form that the user can browse to, view and edit the settings, which may be in whatever format lib_config_base supports.
 
 Dependencies
 --------------------------------------
@@ -112,7 +112,7 @@ Below is an example of how a simple in-memory settings web interface can be crea
 
 ```
 
-Here is an example of how the same web interface can be used for an ini file.
+Here is an example of how the same web interface can be used for an ini file. It also runs on port 8080. Note that a settings file called "my_settings.ini" must be present. 
 
 ```java
 
