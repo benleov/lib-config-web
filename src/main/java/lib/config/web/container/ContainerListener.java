@@ -8,4 +8,6 @@ public interface ContainerListener {
 	 */
 	void onModifed(Configuration config, String key);
 	
+	
+	void onCommand(Command command);
 }

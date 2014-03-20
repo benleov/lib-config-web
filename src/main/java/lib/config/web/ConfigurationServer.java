@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import lib.config.base.configuration.Configuration;
+import lib.config.web.container.Command;
 import lib.config.web.container.ConfigurationContainer;
 import lib.config.web.container.ContainerListener;
 
@@ -27,6 +28,8 @@ public class ConfigurationServer {
 	private Map<String, DisplayableConfiguration> configs;
 	private Connection connection;
 	private final Set<ContainerListener> listeners;
+
+	private final Object sync = new Object();
 
 	public ConfigurationServer(int port,
 			Map<String, DisplayableConfiguration> configs) {
@@ -49,12 +52,32 @@ public class ConfigurationServer {
 						curr.onModifed(config, key);
 					}
 				}
+
+				@Override
+				public void onCommand(Command command) {
+					
+					if (command == Command.EXIT) {
+						synchronized (sync) {
+							sync.notify();
+						}
+					}
+				}
 			});
-			
+
 			Server server = new ContainerServer(container);
 			Connection connection = new SocketConnection(server);
 			SocketAddress address = new InetSocketAddress(port);
 			connection.connect(address);
+
+			// wait for the exit command
+			synchronized (sync) {
+				try {
+					sync.wait();
+				} catch (InterruptedException e) {
+					logger.info("Thread interruped", e);
+				}
+			}
+
 		} else {
 			logger.warn("Attempt to start server ignored (already started).");
 		}

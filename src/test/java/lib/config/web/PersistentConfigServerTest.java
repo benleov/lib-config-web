@@ -12,6 +12,7 @@ import lib.config.base.configuration.ConfigurationList;
 import lib.config.base.configuration.factory.ConfigurationFactory;
 import lib.config.base.configuration.impl.BasicConfiguration;
 import lib.config.base.configuration.persist.impl.IniPersister;
+import lib.config.web.container.Command;
 import lib.config.web.container.ContainerListener;
 
 import org.junit.After;
@@ -111,8 +112,6 @@ public class PersistentConfigServerTest {
 
 			logger.debug("Starting server.");
 
-			server.start();
-
 			// a listener can be added to the server that will be notified
 			// whenever
 			// a configuration is changed
@@ -132,17 +131,16 @@ public class PersistentConfigServerTest {
 						logger.error(
 								"There was a problem trying to write to the settings file.",
 								e);
-
 					}
+				}
 
+				@Override
+				public void onCommand(Command command) {
+					logger.debug("Server recieved command: " + command);
 				}
 			});
 
-			/*
-			 * A real application would synchronize this properly, but for this
-			 * example the thread simply waits here for a set time.
-			 */
-			Thread.sleep(50000);
+			server.start();
 
 			logger.debug("Server finished.");
 		} catch (ConfigurationException e) {

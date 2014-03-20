@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 
 import lib.config.base.configuration.Configuration;
+import lib.config.web.container.Command;
 import lib.config.web.container.ContainerListener;
 
 import org.junit.After;
@@ -104,7 +105,6 @@ public class TransientConfigServerTest {
 		// configurations
 		ConfigurationServer server = new ConfigurationServer(8080, configs);
 		logger.debug("Starting server.");
-		server.start();
 
 		// a listener can be added to the server that will be notified whenever
 		// a configuration is changed
@@ -117,13 +117,14 @@ public class TransientConfigServerTest {
 			public void onModifed(Configuration config, String key) {
 				logger.debug("Configuration modified: " + config);
 			}
-		});
 
-		/*
-		 * A real application would synchronise this properly, but for this
-		 * example the thread simply waits here for a set time.
-		 */
-		Thread.sleep(50000);
+			@Override
+			public void onCommand(Command command) {
+				logger.debug("Server recieved command: " + command);
+			}
+		});
+		
+		server.start();
 
 		logger.debug("Server finished.");
 	}
