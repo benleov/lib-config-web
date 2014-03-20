@@ -13,12 +13,9 @@ Dependencies
 Usage
 --------------------------------------
 
-Below is an example of how a simple in-memory settings web interface can be created. When running, it hosts a page on port 8080, which contains a form to update all settings within the settings file. Note that we could use a different configuration, so that the web interface updated a persistent source, such as an XML or INI file. 
+Below is an example of how a simple in-memory settings web interface can be created. When running, it hosts a page on port 8080, which contains a form to update all settings within the settings file. 
 
 ```java
-		/*
-		 * 
-		 */
 		DisplayableConfiguration testConfig = new DisplayableConfiguration() {
 
 			/*
@@ -90,7 +87,6 @@ Below is an example of how a simple in-memory settings web interface can be crea
 		// configurations
 		ConfigurationServer server = new ConfigurationServer(8080, configs);
 		logger.debug("Starting server.");
-		server.start();
 
 		// a listener can be added to the server that will be notified whenever
 		// a configuration is changed
@@ -100,17 +96,140 @@ Below is an example of how a simple in-memory settings web interface can be crea
 			 * This gets notified whenever a configuration is modified.
 			 */
 			@Override
-			public void onModifed(Configuration config) {
+			public void onModifed(Configuration config, String key) {
 				logger.debug("Configuration modified: " + config);
 			}
-		});
 
-		/*
-		 * A real application would synchronise this properly, but for this
-		 * example the thread simply waits here for a set time.
-		 */
-		Thread.sleep(50000);
+			@Override
+			public void onCommand(Command command) {
+				logger.debug("Server recieved command: " + command);
+			}
+		});
+		
+		server.start();
 
 		logger.debug("Server finished.");
 
 ```
+
+Here is an example of how the same web interface can be used for an ini file.
+
+```java
+
+		/*
+		 * The settings file the settings server will modify.
+		 */
+		final File settingsFile = new File("my_settings.ini");
+		Map<String, DisplayableConfiguration> configs = new HashMap<String, DisplayableConfiguration>();
+
+		/*
+		 * There is no way (without resorting to reflection) to construct a
+		 * parameterized variable Because of this, we need to supply a factory
+		 * to the persister so it knows how to construct the loaded display
+		 * configurations
+		 */
+
+		final IniPersister<DisplayableConfiguration> persister = new IniPersister<DisplayableConfiguration>(
+				new ConfigurationFactory<DisplayableConfiguration>() {
+
+					class BasicDisplayable extends BasicConfiguration implements
+							DisplayableConfiguration {
+
+						private String name;
+
+						@Override
+						public String getDisplayName() {
+							return name;
+						}
+
+						@Override
+						public LinkedHashSet<String> getKeys() {
+							return new LinkedHashSet<String>(super.getKeys());
+						}
+
+					}
+
+					// this converts a basic configuration to a displayable
+					// configuration
+					@Override
+					public DisplayableConfiguration buildConfiguration(
+							String name) {
+						BasicDisplayable bd = new BasicDisplayable();
+						bd.name = name;
+						return bd;
+					}
+
+				});
+
+		try {
+
+			/*
+			 * Here the list of configurations is constructed.
+			 */
+			final ConfigurationList<DisplayableConfiguration> list = persister
+					.read(settingsFile);
+
+			for (DisplayableConfiguration config : list.getConfigurations()) {
+				configs.put(config.getId(), config);
+			}
+
+			/*
+			 * The id within the configs HashMap below is used to build the URL
+			 * to access the settings display page. In this example to access
+			 * the settings you should browse to:
+			 * 
+			 * http://localhost:8080/?config=my_settings_here
+			 * 
+			 * Multiple settings can be hosted at one time.
+			 */
+
+			// start the configuration server on port 8080, and host the
+			// supplied
+			// configurations
+			ConfigurationServer server = new ConfigurationServer(8080, configs);
+
+			logger.debug("Starting server.");
+
+			// a listener can be added to the server that will be notified
+			// whenever
+			// a configuration is changed
+			server.addListener(new ContainerListener() {
+
+				/**
+				 * This gets notified whenever a configuration is modified.
+				 */
+				@Override
+				public void onModifed(Configuration config, String key) {
+
+					// notify the persister that the settings have been
+					// modified, and save them.
+					try {
+						persister.write(list, settingsFile);
+					} catch (ConfigurationException e) {
+						logger.error(
+								"There was a problem trying to write to the settings file.",
+								e);
+					}
+				}
+
+				@Override
+				public void onCommand(Command command) {
+					logger.debug("Server recieved command: " + command);
+				}
+			});
+
+			server.start();
+
+			logger.debug("Server finished.");
+		} catch (ConfigurationException e) {
+
+			// no file was found. No settings will be displayed to edit.
+			logger.error(
+					"No settings file was found. Cannot start web configuration.",
+					e);
+		}
+
+
+```
+
+
