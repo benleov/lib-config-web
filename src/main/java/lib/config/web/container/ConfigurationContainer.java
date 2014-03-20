@@ -50,19 +50,22 @@ public class ConfigurationContainer implements Container {
 
 			Query query = request.getAddress().getQuery();
 			
+			// a post to update a setting
 			if(request.getMethod().equalsIgnoreCase("POST")) {
 				
-				String id = query.get("config_id");
-				DisplayableConfiguration conf = config.get(id);
+				Query postQuery = request.getQuery();
 				
+				String id = postQuery.get("config_id");
+				DisplayableConfiguration conf = config.get(id);
+								
 				if(conf != null) {
 					
 					boolean modified = false;
 					String modifyedKey = null;
 					
-					for(String key : query.keySet()) {
+					for(String key : postQuery.keySet()) {
 						if(conf.getKeys().contains(key)) {
-							conf.setProperty(key, query.get(key));
+							conf.setProperty(key, postQuery.get(key));
 							modifyedKey = key;
 							modified = true;
 						} 
@@ -80,6 +83,7 @@ public class ConfigurationContainer implements Container {
 				
 			} else if(query.isEmpty()) {
 				
+				// display a list of all the configurations
 				
 				body.println("<h2>Configurations</h2>");
 				body.println("<ul>");
@@ -98,6 +102,8 @@ public class ConfigurationContainer implements Container {
 				body.println("</ul>");
 				
 			} else {
+				
+				// unknown request
 				
 				String queried = query.get("config");
 				
