@@ -6,9 +6,9 @@ lib_config_web provides an extremely lightweight web front end to the configurat
 Dependencies
 --------------------------------------
 
-* [lib_config_base] (https://github.com/benleov/lib_config_base)
-* [Simple Framework] (http://www.simpleframework.org/)
-* [SLF4J](www.slf4j.org/‎) 
+* [lib_config_base] (https://github.com/benleov/lib_config_base) - Provides access to the underlying settings
+* [Simple Framework] (http://www.simpleframework.org/) - Simple HTML server
+* [SLF4J](www.slf4j.org/‎) - Logging facacde
 
 Usage
 --------------------------------------
