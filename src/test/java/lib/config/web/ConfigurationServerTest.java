@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 
 public class ConfigurationServerTest {
 
-	private static final Logger logger = LoggerFactory.getLogger(
-			ConfigurationServerTest.class);
-	
+	private static final Logger logger = LoggerFactory
+			.getLogger(ConfigurationServerTest.class);
+
 	@Before
 	public void setUp() throws Exception {
 	}
@@ -29,35 +29,52 @@ public class ConfigurationServerTest {
 
 	@Test
 	public void testStart() throws IOException, InterruptedException {
-		
-		// create test configuration
+
+		/*
+		 * 
+		 */
 		DisplayableConfiguration testConfig = new DisplayableConfiguration() {
+
+			/*
+			 * Here we are simply putting the settings in a HashMap, but it
+			 * could be writing them to disk, or a database.
+			 */
 			private Map<String, String> properties = new HashMap<String, String>();
-			
+
 			@Override
 			public String getProperty(String key) {
 				return properties.get(key);
 			}
-			
+
 			@Override
 			public void setProperty(String key, String value) {
 				properties.put(key, value);
 			}
-			
+
+			/**
+			 * A unique id for the settings.
+			 */
 			@Override
 			public String getId() {
 				return "test_settings";
 			}
-			
+
+			/**
+			 * This describes what settings are available to be modified, and
+			 * thus what will be displayed on the webpage.
+			 */
 			@Override
 			public LinkedHashSet<String> getKeys() {
 				LinkedHashSet<String> keys = new LinkedHashSet<String>();
-				keys.add("timeout");
-				keys.add("destination");
-				keys.add("source_dir");
+				keys.add("my_first_property");
+				keys.add("my_second_property");
+				keys.add("my_third_property");
 				return keys;
 			}
 
+			/**
+			 * This is what will be displayed as the title of the page.
+			 */
 			@Override
 			public String getDisplayName() {
 				return "Test Configuration";
@@ -65,33 +82,50 @@ public class ConfigurationServerTest {
 
 			@Override
 			public void setId(String id) {
-				// TODO Auto-generated method stub
-				
+				//
+
 			}
 		};
-		
-		// the map enforces a unique id between the displayable configurations. 
-		Map<String, DisplayableConfiguration> configs = new HashMap<String, 
-				DisplayableConfiguration>();
-		
-		configs.put("test_config", testConfig);
-		
+
+		/*
+		 * The id within the configs HashMap below is used to build the URL to
+		 * access the settings display page. In this example to access the
+		 * settings you should browse to:
+		 * 
+		 * http://localhost:8080/?config=my_settings_here
+		 * 
+		 * Multiple settings can be hosted at one time.
+		 */
+
+		Map<String, DisplayableConfiguration> configs = new HashMap<String, DisplayableConfiguration>();
+		configs.put("my_settings_here", testConfig);
+
+		// start the configuration server on port 8080, and host the supplied
+		// configurations
 		ConfigurationServer server = new ConfigurationServer(8080, configs);
-		logger.debug("Pre server start");
+		logger.debug("Starting server.");
 		server.start();
-		
+
+		// a listener can be added to the server that will be notified whenever
+		// a configuration is changed
 		server.addListener(new ContainerListener() {
-			
+
+			/**
+			 * This gets notified whenever a configuration is modified.
+			 */
 			@Override
 			public void onModifed(Configuration config) {
-				System.out.println("Configuration modified: " + config);
+				logger.debug("Configuration modified: " + config);
 			}
 		});
-		
-		// TODO sync this properly
+
+		/*
+		 * A real application would synchronise this properly, but for this
+		 * example the thread simply waits here for a set time.
+		 */
 		Thread.sleep(50000);
-		
-		logger.debug("Post server start");
+
+		logger.debug("Server finished.");
 	}
 
 }
