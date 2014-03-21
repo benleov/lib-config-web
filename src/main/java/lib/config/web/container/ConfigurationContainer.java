@@ -106,7 +106,7 @@ public class ConfigurationContainer implements Container {
 							break;
 						case UPDATE:
 							// TODO display update form
-							html.append("Dispaly update form");
+							html.append("Display update form");
 							// appendUpdateForm(html, curr);
 							break;
 						case DELETE:
@@ -163,13 +163,23 @@ public class ConfigurationContainer implements Container {
 
 						break;
 					case ADD:
-					case UPDATE:
 						String key = postQuery.get("key");
 						String value = postQuery.get("value");
 						
 						conf.setProperty(key, value);
 						notifyOnAdd(conf, key);
-
+						html.append("Configuration has been added!");
+						html.append("<a href='/'>Back</a>");
+						break;
+					case UPDATE:
+						
+						for (String currKey : postQuery.keySet()) {
+							if (conf.hasProperty(currKey)) {
+								conf.setProperty(currKey, postQuery.get(currKey));
+								notifyOnUpdate(conf, currKey);
+							}
+						}
+						
 						html.append("Configuration has been updated!");
 						html.append("<a href='/'>Back</a>");
 						break;

@@ -92,6 +92,11 @@ public class TransientConfigServerTest {
 			public boolean removeProperty(String key) {
 				return properties.remove(key) != null;
 			}
+
+			@Override
+			public boolean hasProperty(String key) {
+				return properties.containsKey(key);
+			}
 		};
 
 		/*
