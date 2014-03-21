@@ -81,7 +81,7 @@ public class INIPersistentConfigServerTest {
 						return bd;
 					}
 
-				});
+				}, settingsFile);
 
 		try {
 
@@ -89,7 +89,7 @@ public class INIPersistentConfigServerTest {
 			 * Here the list of configurations is constructed.
 			 */
 			final ConfigurationList<DisplayableConfiguration> list = persister
-					.read(settingsFile);
+					.read();
 
 			for (DisplayableConfiguration config : list.getConfigurations()) {
 				configs.put(config.getId(), config);
@@ -140,7 +140,7 @@ public class INIPersistentConfigServerTest {
 					// modified, and save them
 					
 					try {
-						persister.write(list, settingsFile);
+						persister.write(list);
 					} catch (ConfigurationException e) {
 						logger.error(
 								"There was a problem trying to write to the settings file.",

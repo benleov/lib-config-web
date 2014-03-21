@@ -51,7 +51,7 @@ public class XMLPersistentConfigServerTest {
 		final File settingsFile = new File("my_settings.xml");
 		
 		final SimpleXMLPersister<DisplayableBasicConfiguration> persister = 
-				new SimpleXMLPersister<DisplayableBasicConfiguration>();
+				new SimpleXMLPersister<DisplayableBasicConfiguration>(settingsFile);
 		
 		Map<String, DisplayableConfiguration> configs = 
 				new HashMap<String, DisplayableConfiguration>();
@@ -62,7 +62,7 @@ public class XMLPersistentConfigServerTest {
 			 * Here the list of configurations is constructed.
 			 */
 			final ConfigurationList<DisplayableBasicConfiguration> list = persister
-					.read(settingsFile);
+					.read();
 
 			for (DisplayableBasicConfiguration config : list.getConfigurations()) {
 				configs.put(config.getId(), config);
@@ -113,7 +113,7 @@ public class XMLPersistentConfigServerTest {
 					// modified, and save them
 
 					try {
-						persister.write(list, settingsFile);
+						persister.write(list);
 					} catch (ConfigurationException e) {
 						logger.error(
 								"There was a problem trying to write to the settings file.",
