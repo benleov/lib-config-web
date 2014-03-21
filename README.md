@@ -232,4 +232,110 @@ Here is an example of how the same web interface can be used for an ini file. It
 
 ```
 
+And finally an example using XML settings. This requires a my_settings.xml file to exist. The settings file will look something like the following, once populated with settings.
+
+```xml
+<configurationList>
+   <configurations class="lib.config.web.impl.DisplayableBasicConfiguration" id="test_config_one">
+      <property key="some_key_one">two</property>
+   </configurations>
+</configurationList>
+
+```
+
+The code is as follows.
+
+```java
+
+
+		/*
+		 * The settings file the settings server will modify.
+		 */
+		final File settingsFile = new File("my_settings.xml");
+		
+		final SimpleXMLPersister<DisplayableBasicConfiguration> persister = 
+				new SimpleXMLPersister<DisplayableBasicConfiguration>();
+		
+		Map<String, DisplayableConfiguration> configs = 
+				new HashMap<String, DisplayableConfiguration>();
+ 
+		try {
+
+			/*
+			 * Here the list of configurations is constructed.
+			 */
+			final ConfigurationList<DisplayableBasicConfiguration> list = persister
+					.read(settingsFile);
+
+			for (DisplayableBasicConfiguration config : list.getConfigurations()) {
+				configs.put(config.getId(), config);
+			}
+
+			/*
+			 * The id within the configs HashMap below is used to build the URL
+			 * to access the settings display page. In this example to access
+			 * the settings you should browse to:
+			 * 
+			 * http://localhost:8080/?config=my_settings_here
+			 * 
+			 * Multiple settings can be hosted at one time.
+			 */
+
+			// start the configuration server on port 8080, and host the
+			// supplied
+			// configurations
+			ConfigurationServer server = new ConfigurationServer(8080, configs);
+
+			logger.debug("Starting server.");
+
+			// a listener can be added to the server that will be notified
+			// whenever
+			// a configuration is changed
+			server.addListener(new ContainerListenerAdapter() {
+
+				/**
+				 * This gets notified whenever a configuration is modified.
+				 */
+				@Override
+				public void onModifed(Configuration config, String key) {
+					writeToFile();
+				}
+
+				@Override
+				public void onDelete(Configuration config, String key) {
+					writeToFile();
+				}
+
+				@Override
+				public void onAdd(Configuration config, String key) {
+					writeToFile();
+				}
+
+				public void writeToFile() {
+					// notify the persister that the settings have been
+					// modified, and save them
+
+					try {
+						persister.write(list, settingsFile);
+					} catch (ConfigurationException e) {
+						logger.error(
+								"There was a problem trying to write to the settings file.",
+								e);
+					}
+				}
+
+			});
+
+			server.start();
+
+			logger.debug("Server finished.");
+		} catch (ConfigurationException e) {
+
+			// no file was found. No settings will be displayed to edit.
+			logger.error(
+					"No settings file was found. Cannot start web configuration.",
+					e);
+		}
+
+```
 
