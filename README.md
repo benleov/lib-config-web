@@ -1,7 +1,7 @@
 lib_config_web
 ==================================================
 
-lib_config_web provides an extremely lightweight web front end to the configuration base library.  It generates an HTML form that the user can browse to, view and edit the settings, which may be in whatever format lib_config_base supports.
+lib_config_web provides an extremely lightweight web front end to the configuration base library.  It generates an HTML form that the user can browse to, view and edit the settings, which may be in whatever format lib_config_base supports. Examples for memory based, INI and XML based settings are below.
 
 Dependencies
 --------------------------------------
