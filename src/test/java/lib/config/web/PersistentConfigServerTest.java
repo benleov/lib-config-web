@@ -122,9 +122,23 @@ public class PersistentConfigServerTest {
 				 */
 				@Override
 				public void onModifed(Configuration config, String key) {
+					writeToFile();
+				}
 
+				@Override
+				public void onDelete(Configuration config, String key) {
+					writeToFile();
+ 				}
+
+				@Override
+				public void onAdd(Configuration config, String key) {
+					writeToFile();
+ 				}	
+				
+				public void writeToFile() {
 					// notify the persister that the settings have been
-					// modified, and save them.
+					// modified, and save them
+					
 					try {
 						persister.write(list, settingsFile);
 					} catch (ConfigurationException e) {
@@ -133,11 +147,7 @@ public class PersistentConfigServerTest {
 								e);
 					}
 				}
-
-				@Override
-				public void onCommand(Command command) {
-					logger.debug("Server recieved command: " + command);
-				}
+			
 			});
 
 			server.start();

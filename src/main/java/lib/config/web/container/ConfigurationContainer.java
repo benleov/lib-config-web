@@ -9,6 +9,7 @@ import java.util.Set;
 import lib.config.base.configuration.Configuration;
 import lib.config.web.DisplayableConfiguration;
 
+import org.simpleframework.http.Cookie;
 import org.simpleframework.http.Query;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
@@ -53,18 +54,19 @@ public class ConfigurationContainer implements Container {
 			response.setDate("Last-Modified", time);
 
 			PrintStream body = response.getPrintStream();
+			
 			body.println("<html>");
 			body.println("<title>Simple Configuration Server</title>");
 
 			Query query = request.getAddress().getQuery();
 			StringBuilder html = new StringBuilder();
-
+			
 			// command/navigation request
 			if (request.getMethod().equalsIgnoreCase("GET")) {
 				Query postQuery = request.getQuery();
-				
+
 				Command command = parseCommand(postQuery);
-				
+
 				// default index page
 				if (query.isEmpty()) {
 
@@ -87,46 +89,45 @@ public class ConfigurationContainer implements Container {
 
 					html.append("</ul>");
 
-					appendCommandsForm(html, Command.EXIT);
+					appendCommandsForm(html, null, Command.EXIT);
 
 				} else {
 
-					
 					String queried = query.get("config");
+
+					System.out.println(query.toString());
 					DisplayableConfiguration curr = config.get(queried);
+					
+					if (curr != null) {
 
-					switch (command) {
-					case ADD:
-						// TODO display add form
-						html.append("Dispaly add form");
-						break;
-					case UPDATE:
-						// TODO display update form
-						html.append("Dispaly update form");
-						break;
-					case DELETE:
-						// TODO display delete form
-						html.append("Dispaly delete form");
-						break;
-					case EXIT:
-						notifyOnCommand(Command.EXIT);
-						html.append("Server has now stopped.");
-						break;
-					case VIEW:
-					default:
-						// no command specified. Just view the config.
-
-						if (curr != null) {
-							// display the config form
-							appendConfigForm(html, queried, curr);
-							appendAllCommandsForm(html);
-						} else {
-							// unknown request
-							appendError(html,
-									"Cannot find config with that identifier.");
+						switch (command) {
+						case ADD:
+							appendAddForm(html, curr);
+							break;
+						case UPDATE:
+							// TODO display update form
+							html.append("Dispaly update form");
+							// appendUpdateForm(html, curr);
+							break;
+						case DELETE:
+							// TODO display delete form
+							html.append("Dispaly delete form");
+							// appendDeleteForm(html, curr);
+							break;
+						case EXIT:
+							notifyOnCommand(Command.EXIT);
+							html.append("Server has now stopped.");
+							break;
+						case VIEW:
+						default:
+							appendConfigForm(html, curr);
+							appendAllCommandsForm(html, queried);
+							break;
 						}
-
-						break;
+					} else {
+						// unknown request
+						appendError(html,
+								"Cannot find config with that identifier.");
 					}
 				}
 
@@ -135,9 +136,9 @@ public class ConfigurationContainer implements Container {
 
 				Query postQuery = request.getQuery();
 				Command command = parseCommand(postQuery);
-				
+
 				String id = postQuery.get("config_id");
-				
+
 				DisplayableConfiguration conf = config.get(id);
 
 				if (conf == null) {
@@ -162,35 +163,17 @@ public class ConfigurationContainer implements Container {
 
 						break;
 					case ADD:
-
-						for (String key : postQuery.keySet()) {
-							conf.setProperty(key, postQuery.get(key));
-							notifyOnAdd(conf, key);
-						}
-
-						html.append("Configuration has been updated!");
-						html.append("<a href='/'>Back</a>");
-						break;
 					case UPDATE:
-
-						// find any matching keys that have been updated
-						for (String key : postQuery.keySet()) {
-							if (conf.getKeys().contains(key)) {
-								conf.setProperty(key, postQuery.get(key));
-								modifyedKey = key;
-								modified = true;
-								break;
-							}
-						}
-
-						if (modified) {
-							notifyOnUpdate(conf, modifyedKey);
-						}
+						String key = postQuery.get("key");
+						String value = postQuery.get("value");
+						
+						conf.setProperty(key, value);
+						notifyOnAdd(conf, key);
 
 						html.append("Configuration has been updated!");
 						html.append("<a href='/'>Back</a>");
-
 						break;
+					
 					default:
 						appendError(html, "Invalid command received.");
 						break;
@@ -207,8 +190,33 @@ public class ConfigurationContainer implements Container {
 		}
 	}
 
-	private Command parseCommand(Query query) {
+	private void appendAddForm(StringBuilder html, DisplayableConfiguration curr) {
+
+		appendConfigForm(html, curr);
+
+		html.append("<h3>Add Setting</h3>");
+
+		html.append("<form action='.' method='post'>\n");
+
+		html.append("<input type='hidden' name='command' value='"
+				+ Command.ADD.toString() + "' />");
+
+		// add the config id into the form
+		html.append("<input type='hidden' name='config_id' value='");
+		html.append(curr.getId());
+		html.append("' />\n");
 		
+		// add form
+		html.append("<input type='text' name='key' value='' />");
+		html.append("<input type='text' name='value' value='' />");
+		html.append("<input type='submit' />");
+
+		html.append("</form>");
+
+	}
+
+	private Command parseCommand(Query query) {
+
 		String commandStr = query.get("command");
 
 		Command command = null;
@@ -229,20 +237,21 @@ public class ConfigurationContainer implements Container {
 		html.append("<p>" + errorMessage + "</p>");
 	}
 
-	private void appendConfigForm(StringBuilder html, String id,
+	private void appendConfigForm(StringBuilder html,
 			DisplayableConfiguration config) {
+		
 		html.append("<h3>");
 		html.append("Configuration Form for ");
 		html.append(config.getDisplayName());
 		html.append("</h3>");
 		html.append("<form action='.' method='post'>\n");
-		
+
 		html.append("<input type='hidden' name='command' value='"
 				+ Command.UPDATE.toString() + "' />");
-		
+
 		// add the config id into the form
 		html.append("<input type='hidden' name='config_id' value='");
-		html.append(id);
+		html.append(config.getId());
 		html.append("' />\n");
 
 		for (String key : config.getKeys()) {
@@ -269,22 +278,35 @@ public class ConfigurationContainer implements Container {
 
 	}
 
-	private void appendCommandsForm(StringBuilder html, Command... commands) {
+	private void appendCommandsForm(StringBuilder html, String configId, Command... commands) {
 
 		html.append("<h2>Server Commands</h2>");
 
+		// VIEW is an alias for a standard get request, so doesn't need to be
+		// displayed
+		// to the user
 		for (Command curr : commands) {
-			html.append("<form action='.' method='get'>");
-			html.append("<input type='hidden' name='command' value='"
-					+ curr.toString() + "' />");
-			html.append("<input type='submit' value='" + curr.toString()
-					+ "' />");
-			html.append("</form>");
+
+			if (curr != Command.VIEW) {
+				
+				html.append("<form action='.' method='get'>");
+				html.append("<input type='hidden' name='command' value='"
+						+ curr.toString() + "' />");
+				
+				if(configId != null) {
+					html.append("<input type='hidden' name='config' value='"
+							+ configId + "' />");
+				}
+				
+				html.append("<input type='submit' value='" + curr.toString()
+						+ "' />");
+				html.append("</form>");
+			}
 		}
 	}
 
-	private void appendAllCommandsForm(StringBuilder html) {
-		appendCommandsForm(html, Command.values());
+	private void appendAllCommandsForm(StringBuilder html, String parameters) {
+		appendCommandsForm(html, parameters, Command.values());
 	}
 
 	public void addListener(ContainerListener listener) {
