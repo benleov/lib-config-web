@@ -13,7 +13,7 @@ import lib.config.base.configuration.factory.ConfigurationFactory;
 import lib.config.base.configuration.impl.BasicConfiguration;
 import lib.config.base.configuration.persist.impl.IniPersister;
 import lib.config.web.container.Command;
-import lib.config.web.container.ContainerListener;
+import lib.config.web.container.ContainerListenerAdapter;
 
 import org.junit.After;
 import org.junit.Before;
@@ -115,7 +115,7 @@ public class PersistentConfigServerTest {
 			// a listener can be added to the server that will be notified
 			// whenever
 			// a configuration is changed
-			server.addListener(new ContainerListener() {
+			server.addListener(new ContainerListenerAdapter() {
 
 				/**
 				 * This gets notified whenever a configuration is modified.

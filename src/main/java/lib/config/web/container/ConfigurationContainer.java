@@ -48,7 +48,7 @@ public class ConfigurationContainer implements Container {
 
 			PrintStream body = response.getPrintStream();
 			body.println("<html>");
-			body.println("<title>Simple Configuration</title>");
+			body.println("<title>Simple Configuration Server</title>");
 
 			Query query = request.getAddress().getQuery();
 
@@ -57,18 +57,27 @@ public class ConfigurationContainer implements Container {
 
 				Query postQuery = request.getQuery();
 
-				String command = postQuery.get("command");
+				String commandStr = postQuery.get("command");
+				Command command = Command.valueOf(commandStr);
+				StringBuilder html = new StringBuilder();
 
-				if ("exit".equals(command)) {
+				String id = postQuery.get("config_id");
+				DisplayableConfiguration conf = config.get(id);
+
+				if (conf != null) {
 					
-					notifyOnCommand(Command.EXIT); 
-					
-				} else {
-
-					String id = postQuery.get("config_id");
-					DisplayableConfiguration conf = config.get(id);
-
-					if (conf != null) {
+					switch (command) {
+					case DELETE:
+						
+						// TODO
+						// notifyOnDelete(config, key);
+						break;
+					case ADD:
+						
+						// TODO
+						// notifyOnAdd(Configuration config, String key);
+						break;
+					case UPDATE:
 
 						boolean modified = false;
 						String modifyedKey = null;
@@ -85,12 +94,22 @@ public class ConfigurationContainer implements Container {
 							notifyOnUpdate(conf, modifyedKey);
 						}
 
-						body.println("Configuration has been updated!");
-						body.println("<a href='/'>Back</a>");
-					} else {
-						body.println("Invalid post submitted.");
+						html.append("Configuration has been updated!");
+						html.append("<a href='/'>Back</a>");
+
+						break;
+					case EXIT:
+						notifyOnCommand(Command.EXIT);
+						break;
+					default:
+						appendError(html, "Invalid command received.");
+						break;
 					}
+				} else {
+					html.append("Invalid post submitted.");
 				}
+
+				body.print(html.toString());
 
 			} else if (query.isEmpty()) {
 
@@ -110,25 +129,29 @@ public class ConfigurationContainer implements Container {
 					html.append("</a>");
 					html.append("</li>");
 				}
-				
+
 				html.append("</ul>");
-				
+
 				appendCommandForm(html);
-				
+
 				body.println(html.toString());
-				
+
 			} else {
 
 				// unknown request
+				StringBuilder html = new StringBuilder();
 
 				String queried = query.get("config");
 
 				DisplayableConfiguration curr = config.get(queried);
 				if (curr != null) {
-					body.print(displayConfigForm(queried, curr));
+					appendConfigForm(html, queried, curr);
 				} else {
-					body.println("Cannot find config with that identifier.");
+					appendError(html,
+							"Cannot find config with that identifier.");
 				}
+
+				body.print(html.toString());
 
 			}
 
@@ -140,15 +163,21 @@ public class ConfigurationContainer implements Container {
 		}
 	}
 
-	private String displayConfigForm(String id, DisplayableConfiguration config) {
-		StringBuilder html = new StringBuilder();
+	private void appendError(StringBuilder html, String errorMessage) {
+		html.append("<h2>Error</h2>");
+		html.append("<p>" + errorMessage + "</p>");
+	}
+
+	private void appendConfigForm(StringBuilder html, String id,
+			DisplayableConfiguration config) {
 		html.append("<h3>");
 		html.append("Configuration Form for ");
 		html.append(config.getDisplayName());
 		html.append("</h3>");
 		html.append("<form action='.' method='post'>\n");
 		html.append("<input type='hidden' name='config_id' value='");
-		html.append("<input type='hidden' name='command' value='update'");
+		html.append("<input type='hidden' name='command' value='"
+				+ Command.UPDATE.toString() + "'");
 		html.append(id);
 
 		html.append("' />\n");
@@ -173,19 +202,34 @@ public class ConfigurationContainer implements Container {
 		html.append("<br />");
 		html.append("<input type='submit'/>");
 
-		
-		
-
 		html.append("</form>");
-		
 
-		
-		
-		return html.toString();
+	}
+
+	private void appendCommandForm(StringBuilder html) {
+
+		html.append("<h2>Server Commands</h2>");
+		html.append("<form action='.' method='post'>");
+		html.append("<input type='hidden' name='command' value='"
+				+ Command.EXIT.toString() + "' />");
+		html.append("<input type='submit' value='Shutdown' />");
+		html.append("</form>");
 	}
 
 	public void addListener(ContainerListener listener) {
 		listeners.add(listener);
+	}
+
+	private void notifyOnAdd(Configuration config, String key) {
+		for (ContainerListener curr : listeners) {
+			curr.onAdd(config, key);
+		}
+	}
+
+	private void notifyOnDelete(Configuration config, String key) {
+		for (ContainerListener curr : listeners) {
+			curr.onDelete(config, key);
+		}
 	}
 
 	private void notifyOnUpdate(Configuration config, String key) {
@@ -193,19 +237,11 @@ public class ConfigurationContainer implements Container {
 			curr.onModifed(config, key);
 		}
 	}
-	
+
 	private void notifyOnCommand(Command command) {
 		for (ContainerListener curr : listeners) {
 			curr.onCommand(command);
 		}
 	}
-	
-	private void appendCommandForm(StringBuilder html) {
-		
-		html.append("<h2>Server Commands</h2>");
-		html.append("<form action='.' method='post'>");
-		html.append("<input type='hidden' name='command' value='exit' />");
-		html.append("<input type='submit' value='Shutdown' />");
-		html.append("</form>");
-	}
+
 }

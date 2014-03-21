@@ -11,6 +11,7 @@ import lib.config.base.configuration.Configuration;
 import lib.config.web.container.Command;
 import lib.config.web.container.ConfigurationContainer;
 import lib.config.web.container.ContainerListener;
+import lib.config.web.container.ContainerListenerAdapter;
 
 import org.simpleframework.http.core.ContainerServer;
 import org.simpleframework.transport.Server;
@@ -44,7 +45,7 @@ public class ConfigurationServer {
 			ConfigurationContainer container = new ConfigurationContainer(
 					configs);
 
-			container.addListener(new ContainerListener() {
+			container.addListener(new ContainerListenerAdapter() {
 
 				@Override
 				public void onModifed(Configuration config, String key) {

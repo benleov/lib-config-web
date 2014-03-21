@@ -1,5 +1,5 @@
 package lib.config.web.container;
 
 public enum Command {
-	EXIT;
+	EXIT, UPDATE, DELETE, ADD;
 }
