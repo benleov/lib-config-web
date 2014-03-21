@@ -87,6 +87,11 @@ public class TransientConfigServerTest {
 				//
 
 			}
+
+			@Override
+			public boolean removeProperty(String key) {
+				return properties.remove(key) != null;
+			}
 		};
 
 		/*
