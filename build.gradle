@@ -8,7 +8,7 @@ repositories {
 
 dependencies {
 		compile([project(':lib_config_base').sourceSets.test.output],
-		    [group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'],
+		        [group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'],
 			[group:'ch.qos.logback', name: 'logback-core', version: '0.9.29'],
 			[group:'org.simpleframework', name: 'simple-xml', version: '2.6'])
 		
